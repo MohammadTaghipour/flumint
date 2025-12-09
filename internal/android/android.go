@@ -1,5 +1,5 @@
 package android
 
 type IAndroid interface {
-	ChangePackageName(newPackageName string)
+	ChangePackageName(newPackageName string) error
 }
