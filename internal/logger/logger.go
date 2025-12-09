@@ -1,4 +1,4 @@
-package logger
+package inout
 
 import (
 	"sync"
@@ -11,7 +11,7 @@ var (
 	once sync.Once
 )
 
-func Instance() *zap.SugaredLogger {
+func Logger() *zap.SugaredLogger {
 	once.Do(func() {
 		logger, err := zap.NewDevelopment()
 		if err != nil {
