@@ -7,21 +7,26 @@ import (
 )
 
 func main() {
+	workDir := "D:\\Programming\\FlutterProjects\\rubika_downloader"
+	// workDir, err := os.Getwd()
+	// if err != nil {
+	// 	panic("error when getting current directory")
+	// }
+
 	config := config.Config{
-		AndroidConfig: config.AndroidConfig{
-			BuildGradlePath:     "android/app/build.gradle",
-			ManifestPath:        "android/app/src/main/AndroidManifest.xml",
-			ManifestDebugPath:   "android/app/src/debug/AndroidManifest.xml",
-			ManifestProfilePath: "android/app/src/profile/AndroidManifest.xml",
-			ActivityPath:        "android/app/src/main/",
-		},
+		WorkingDir:    workDir,
+		AndroidConfig: config.DefaultAndroidConfig(workDir),
 	}
 
+	strategy, err := android.NewBundleStrategy(config.AndroidConfig)
+	if err != nil {
+		fmt.Println("error on strategy", err)
+	}
 	android := android.Android{
-		Config: config.AndroidConfig,
-	}
+		Config:   config.AndroidConfig,
+		Strategy: strategy}
 
-	if err := android.ChangePackageName("apps"); err != nil {
-		fmt.Println("error on package rename")
+	if err := android.SetBundleId("com.example.app"); err != nil {
+		fmt.Println("error on package rename", err)
 	}
 }
