@@ -85,6 +85,12 @@ type Android struct {
 	Strategy BundleIdStrategy
 }
 
+func NewAndroid(root string) *Android {
+	return &Android{
+		Config: config.DefaultAndroidConfig(root),
+	}
+}
+
 func (a *Android) GetAppName() (string, error) {
 	content, err := os.ReadFile(a.Config.ManifestMain)
 	if err != nil {
