@@ -5,6 +5,10 @@ import (
 	"strings"
 )
 
+type WebConfig struct {
+	IndexHTML string
+}
+
 type AndroidConfig struct {
 	ProjectRoot      string
 	ManifestMain     string
@@ -13,6 +17,12 @@ type AndroidConfig struct {
 	GradleGroovy     string
 	GradleKts        string
 	MainActivityRoot string // android/app/src/main/(java|kotlin)
+}
+
+func DefaultWebConfig(root string) WebConfig {
+	return WebConfig{
+		IndexHTML: filepath.Join(root, "web", "index.html"),
+	}
 }
 
 func DefaultAndroidConfig(root string) AndroidConfig {
