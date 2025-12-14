@@ -1,8 +1,8 @@
 package main
 
 import (
-	"flumint/internal/android"
 	"flumint/internal/config"
+	"flumint/internal/platform/android"
 	"fmt"
 )
 
