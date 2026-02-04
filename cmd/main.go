@@ -1,8 +1,8 @@
 package main
 
 import (
+	"flumint/internal/flutter"
 	"fmt"
-	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -62,8 +62,22 @@ func init() {
 
 // The main() function is the true entry point. Its only job is to execute the root command.
 func main() {
-	if err := rootCmd.Execute(); err != nil {
+	// init components
+	f := flutter.Flutter{}
+	ver, err := f.GetVersion()
+	if err != nil {
 		fmt.Println(err)
-		os.Exit(1)
+	} else {
+		fmt.Println(ver.Version)
+		fmt.Println(ver.Dart)
+		fmt.Println(ver.Channel)
+		fmt.Println(ver.DevTools)
 	}
+	doctor, err := f.RunDoctor()
+	fmt.Println(doctor)
+
+	//if err := rootCmd.Execute(); err != nil {
+	//	fmt.Println(err)
+	//	os.Exit(1)
+	//}
 }
