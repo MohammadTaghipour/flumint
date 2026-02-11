@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"flumint/internal/assets"
 	"flumint/internal/client"
 	"flumint/internal/config"
 	"fmt"
@@ -32,6 +33,9 @@ var buildCmd = &cobra.Command{
 		println(cfg.PackageName)
 
 		// Inject assets
+		if err := assets.Inject(clientPath); err != nil {
+			panic(err)
+		}
 
 		// Patch Android build files
 
