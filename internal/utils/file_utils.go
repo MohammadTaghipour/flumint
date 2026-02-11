@@ -53,3 +53,11 @@ func FileExists(p string) bool {
 	_, err := os.Stat(p)
 	return err == nil
 }
+
+func DirectoryExists(p string) bool {
+	info, err := os.Stat(p)
+	if os.IsNotExist(err) || !info.IsDir() {
+		return false
+	}
+	return err == nil
+}

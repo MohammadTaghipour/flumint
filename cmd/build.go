@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"flumint/internal/client"
+	"flumint/internal/config"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -17,12 +19,17 @@ var buildCmd = &cobra.Command{
 		fmt.Printf("Building client %s for %s in %s environment\n", clientName, platform, env)
 
 		// Resolve client
+		clientPath, err := client.Resolve(clientName)
+		if err != nil {
+			panic(err)
+		}
 
 		// Load config
-		// cfg, err := config.Load(clientPath)
-		// if err != nil {
-		// 	panic(err)
-		// }
+		cfg, err := config.Load(clientPath)
+		if err != nil {
+			panic(err)
+		}
+		println(cfg.PackageName)
 
 		// Inject assets
 
