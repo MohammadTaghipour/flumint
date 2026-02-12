@@ -17,6 +17,11 @@
 - Manage multiple environments: `dev`, `staging`, `prod`
 - `doctor` command to check system and dependencies health
 
+## ⚙ Platform Support
+
+| 🍏 MacOS | 🐧 Linux | 💻 Windows |
+|:--------:|:--------:|:----------:|
+|    ✅    |    ✅     |     ✅      |
 
 ## 🛠️ Installation
 
