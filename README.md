@@ -3,7 +3,11 @@
 
 # 🦋 Flumint
 
-**Flumint** is a CLI tool for building multi-client Flutter projects. It allows you to build your Flutter app for multiple clients and platforms easily.
+**Flumint** - a CLI tool for building multi-client Flutter projects. It allows you to build your Flutter app for multiple clients and platforms easily.
+
+<div align="start">
+  <img src="https://github.com/MohammadTaghipour/flumint/blob/master/flumint-logo.png" height="250" alt="Flumint Logo"/>
+</div>
 
 
 ## ✨ Features
