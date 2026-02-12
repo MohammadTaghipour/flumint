@@ -2,25 +2,31 @@ package web
 
 import (
 	"errors"
-	"flumint/internal/config"
 	"fmt"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 )
 
 type Web struct {
-	Config config.WebConfig
+	Config Config
+}
+
+func DefaultWebConfig(root string) Config {
+	return Config{
+		IndexHTMLPath: filepath.Join(root, "web", "index.html"),
+	}
 }
 
 func NewWeb(root string) *Web {
 	return &Web{
-		Config: config.DefaultWebConfig(root),
+		Config: DefaultWebConfig(root),
 	}
 }
 
 func (w *Web) GetAppName() (string, error) {
-	data, err := os.ReadFile(w.Config.IndexHTML)
+	data, err := os.ReadFile(w.Config.IndexHTMLPath)
 	if err != nil {
 		return "", err
 	}
@@ -41,7 +47,7 @@ func (w *Web) GetAppName() (string, error) {
 }
 
 func (w *Web) SetAppName(appName string) error {
-	data, err := os.ReadFile(w.Config.IndexHTML)
+	data, err := os.ReadFile(w.Config.IndexHTMLPath)
 	if err != nil {
 		return err
 	}
@@ -62,13 +68,5 @@ func (w *Web) SetAppName(appName string) error {
 		return errors.New("title tag not found in index.html")
 	}
 
-	return os.WriteFile(w.Config.IndexHTML, []byte(strings.Join(lines, "\n")), os.ModePerm)
-}
-
-func (w *Web) GetBundleId() string {
-	return "Web platform doesn't have bundleIdentifier."
-}
-
-func (w *Web) SetBundleId(bundleId string) string {
-	return "Web platform doesn't have bundleIdentifier."
+	return os.WriteFile(w.Config.IndexHTMLPath, []byte(strings.Join(lines, "\n")), os.ModePerm)
 }
