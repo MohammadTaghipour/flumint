@@ -2,12 +2,25 @@ package android
 
 import (
 	"errors"
-	"flumint/internal/config"
 	"flumint/internal/utils"
 	"fmt"
 	"os"
+	"path/filepath"
 	"regexp"
+	"strings"
 )
+
+func DefaultAndroidConfig(root string) Config {
+	return Config{
+		ProjectRootPath:      root,
+		ManifestMainPath:     filepath.Join(append([]string{root}, strings.Split("android/app/src/main/AndroidManifest.xml", "/")...)...),
+		ManifestDebugPath:    filepath.Join(append([]string{root}, strings.Split("android/app/src/debug/AndroidManifest.xml", "/")...)...),
+		ManifestProfilePath:  filepath.Join(append([]string{root}, strings.Split("android/app/src/profile/AndroidManifest.xml", "/")...)...),
+		GradleGroovyPath:     filepath.Join(append([]string{root}, strings.Split("android/app/build.gradle", "/")...)...),
+		GradleKtsPath:        filepath.Join(append([]string{root}, strings.Split("android/app/build.gradle.kts", "/")...)...),
+		MainActivityRootPath: filepath.Join(append([]string{root}, strings.Split("android/app/src/main", "/")...)...),
+	}
+}
 
 type BundleIdStrategy interface {
 	ReadBundleId() (string, error)
@@ -64,35 +77,35 @@ func (k KotlinStrategy) WriteBundleId(newId string) error {
 	)
 }
 
-func NewBundleStrategy(cfg config.AndroidConfig) (BundleIdStrategy, error) {
-	hasGroovy := utils.FileExists(cfg.GradleGroovy)
-	hasKts := utils.FileExists(cfg.GradleKts)
+func NewBundleStrategy(cfg *Config) (BundleIdStrategy, error) {
+	hasGroovy := utils.FileExists(cfg.GradleGroovyPath)
+	hasKts := utils.FileExists(cfg.GradleKtsPath)
 
 	if hasGroovy && hasKts {
 		return nil, errors.New("both build.gradle and build.gradle.kts exist; remove one")
 	}
 	if hasGroovy {
-		return GroovyStrategy{Path: cfg.GradleGroovy}, nil
+		return GroovyStrategy{Path: cfg.GradleGroovyPath}, nil
 	}
 	if hasKts {
-		return KotlinStrategy{Path: cfg.GradleKts}, nil
+		return KotlinStrategy{Path: cfg.GradleKtsPath}, nil
 	}
 	return nil, errors.New("no gradle build file found")
 }
 
 type Android struct {
-	Config   config.AndroidConfig
+	Config   Config
 	Strategy BundleIdStrategy
 }
 
 func NewAndroid(root string) *Android {
 	return &Android{
-		Config: config.DefaultAndroidConfig(root),
+		Config: DefaultAndroidConfig(root),
 	}
 }
 
 func (a *Android) GetAppName() (string, error) {
-	content, err := os.ReadFile(a.Config.ManifestMain)
+	content, err := os.ReadFile(a.Config.ManifestMainPath)
 	if err != nil {
 		return "", err
 	}
@@ -107,9 +120,9 @@ func (a *Android) GetAppName() (string, error) {
 
 func (a *Android) SetAppName(name string) error {
 	files := []string{
-		a.Config.ManifestMain,
-		a.Config.ManifestDebug,
-		a.Config.ManifestProfile,
+		a.Config.ManifestMainPath,
+		a.Config.ManifestDebugPath,
+		a.Config.ManifestProfilePath,
 	}
 
 	for _, file := range files {
