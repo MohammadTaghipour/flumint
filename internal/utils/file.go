@@ -32,12 +32,15 @@ func ReplaceInFileRegex(path, pattern, replacement string) error {
 func DeleteEmptyDirs(root string) error {
 	var dirs []string
 
-	filepath.WalkDir(root, func(p string, d fs.DirEntry, err error) error {
+	err := filepath.WalkDir(root, func(p string, d fs.DirEntry, err error) error {
 		if d.IsDir() {
 			dirs = append(dirs, p)
 		}
 		return nil
 	})
+	if err != nil {
+		return err
+	}
 
 	// Reverse-delete so nested dirs get removed first
 	for i := len(dirs) - 1; i >= 0; i-- {

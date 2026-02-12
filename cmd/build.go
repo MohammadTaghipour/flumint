@@ -126,5 +126,5 @@ func init() {
 	buildCmd.Flags().String("client", "", "Client name")
 	buildCmd.Flags().String("platform", "android", "Target platform: android/web")
 	buildCmd.Flags().String("env", "dev", "Environment: dev/staging/prod")
-	buildCmd.MarkFlagRequired("client")
+	_ = buildCmd.MarkFlagRequired("client")
 }
