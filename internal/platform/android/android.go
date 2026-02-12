@@ -47,8 +47,8 @@ func (g GroovyStrategy) ReadBundleId() (string, error) {
 func (g GroovyStrategy) WriteBundleId(newId string) error {
 	return utils.ReplaceInFileRegex(
 		g.Path,
-		`applicationId\s*"(.*?)"`,
-		fmt.Sprintf(`applicationId "%s"`, newId),
+		`applicationId\s*=\s*"(.*?)"`,
+		fmt.Sprintf(`applicationId = "%s"`, newId),
 	)
 }
 
