@@ -36,7 +36,7 @@ func (g GroovyStrategy) ReadBundleId() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	reg := regexp.MustCompile(`applicationId\s*"?"(.*?)"`)
+	reg := regexp.MustCompile(`applicationId\s*=?\s*"(.*?)"`)
 	match := reg.FindStringSubmatch(string(content))
 	if len(match) < 2 {
 		return "", errors.New("applicationId not found in Groovy gradle")
@@ -98,10 +98,18 @@ type Android struct {
 	Strategy BundleIdStrategy
 }
 
-func NewAndroid(root string) *Android {
-	return &Android{
-		Config: DefaultAndroidConfig(root),
+func NewAndroid(root string) (*Android, error) {
+	cfg := DefaultAndroidConfig(root)
+
+	strategy, err := NewBundleStrategy(&cfg)
+	if err != nil {
+		return nil, err
 	}
+
+	return &Android{
+		Config:   cfg,
+		Strategy: strategy,
+	}, nil
 }
 
 func (a *Android) GetAppName() (string, error) {
@@ -126,22 +134,30 @@ func (a *Android) SetAppName(name string) error {
 	}
 
 	for _, file := range files {
-		utils.ReplaceInFileRegex(file,
-			`android:label="(.*?)"`,
-			fmt.Sprintf(`android:label="%s"`, name),
-		)
+		if utils.FileExists(file) {
+			if err := utils.ReplaceInFileRegex(
+				file,
+				`android:label="(.*?)"`,
+				fmt.Sprintf(`android:label="%s"`, name),
+			); err != nil {
+				return err
+			}
+		}
 	}
 
 	return nil
 }
 
 func (a *Android) GetBundleId() (string, error) {
+	if a.Strategy == nil {
+		return "", errors.New("bundle strategy not initialized")
+	}
 	return a.Strategy.ReadBundleId()
 }
 
 func (a *Android) SetBundleId(id string) error {
-	if err := a.Strategy.WriteBundleId(id); err != nil {
-		return err
+	if a.Strategy == nil {
+		return errors.New("bundle strategy not initialized")
 	}
-	return nil
+	return a.Strategy.WriteBundleId(id)
 }
