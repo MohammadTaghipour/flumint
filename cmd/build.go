@@ -5,6 +5,7 @@ import (
 	"flumint/internal/client"
 	"flumint/internal/config"
 	"flumint/internal/flutter"
+	"flumint/internal/platform/android"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -39,6 +40,32 @@ var buildCmd = &cobra.Command{
 		}
 
 		// Patch Android build files
+		if platform == "android" {
+			androidUtil, err := android.NewAndroid("./")
+			if err != nil {
+				panic(err)
+			}
+
+			oldAppName, err := androidUtil.GetAppName()
+			if err != nil {
+				panic(err)
+			}
+			if oldAppName != cfg.AppName {
+				if err := androidUtil.SetAppName(cfg.AppName); err != nil {
+					panic(err)
+				}
+			}
+
+			oldPackageName, err := androidUtil.GetBundleId()
+			if err != nil {
+				panic(err)
+			}
+			if oldPackageName != cfg.PackageName {
+				if err := androidUtil.SetBundleId(cfg.PackageName); err != nil {
+					panic(err)
+				}
+			}
+		}
 
 		// Update pubspec.yaml
 
