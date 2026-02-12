@@ -1,11 +1,12 @@
 package flutter
 
 import (
-	"flumint/internal/config"
 	"fmt"
 	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/MohammadTaghipour/flumint/internal/config"
 )
 
 func RunDoctor() (string, error) {

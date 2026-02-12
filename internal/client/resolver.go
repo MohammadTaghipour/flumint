@@ -1,9 +1,10 @@
 package client
 
 import (
-	"flumint/internal/utils"
 	"fmt"
 	"path/filepath"
+
+	"github.com/MohammadTaghipour/flumint/internal/utils"
 )
 
 // Resolve checks if the client exists and returns its path

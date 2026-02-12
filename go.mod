@@ -1,4 +1,4 @@
-module flumint
+module github.com/MohammadTaghipour/flumint
 
 go 1.25.0
 

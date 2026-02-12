@@ -1,9 +1,10 @@
 package main
 
 import (
-	"flumint/cmd"
 	"fmt"
 	"os"
+
+	"github.com/MohammadTaghipour/flumint/cmd"
 )
 
 func main() {

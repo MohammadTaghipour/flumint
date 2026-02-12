@@ -1,9 +1,10 @@
 package assets
 
 import (
-	"flumint/internal/utils"
 	"fmt"
 	"path/filepath"
+
+	"github.com/MohammadTaghipour/flumint/internal/utils"
 )
 
 // Inject copies client assets into lib/assets and android/google-services.json

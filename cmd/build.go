@@ -1,13 +1,14 @@
 package cmd
 
 import (
-	"flumint/internal/assets"
-	"flumint/internal/client"
-	"flumint/internal/config"
-	"flumint/internal/flutter"
-	"flumint/internal/platform/android"
-	"flumint/internal/platform/web"
 	"fmt"
+
+	"github.com/MohammadTaghipour/flumint/internal/assets"
+	"github.com/MohammadTaghipour/flumint/internal/client"
+	"github.com/MohammadTaghipour/flumint/internal/config"
+	"github.com/MohammadTaghipour/flumint/internal/flutter"
+	"github.com/MohammadTaghipour/flumint/internal/platform/android"
+	"github.com/MohammadTaghipour/flumint/internal/platform/web"
 
 	"github.com/spf13/cobra"
 )

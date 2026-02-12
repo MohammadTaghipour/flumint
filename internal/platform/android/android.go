@@ -2,12 +2,13 @@ package android
 
 import (
 	"errors"
-	"flumint/internal/utils"
 	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/MohammadTaghipour/flumint/internal/utils"
 )
 
 func DefaultAndroidConfig(root string) Config {
