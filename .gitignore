@@ -40,3 +40,22 @@ go.work
 
 ### Swagger ###
 docs
+
+
+# flutter project
+/android
+/build
+/ios
+/lib
+/web
+/test
+/assets
+pubspec.yaml
+pubspec.lock
+devtools_options.yaml
+firebase.json
+l10n.yaml
+saman_academy_interactive.iml
+/clients
+.dart_tool/
+.flutter-plugins-dependencies
