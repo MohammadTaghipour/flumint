@@ -12,6 +12,33 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var doctorCmd = &cobra.Command{
+	Use:   "doctor",
+	Short: "Check Flumint health and status of components",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		fmt.Printf("Running Flumint doctor...\n")
+
+		flutterV, err := flutter.GetVersion()
+		if err != nil {
+			return fmt.Errorf("failed to get flutter version. %w", err)
+		}
+
+		fmt.Printf("Flutter version: %s\n", flutterV.Version)
+		fmt.Printf("Flutter channel: %s\n", flutterV.Channel)
+		fmt.Printf("Dart version: %s\n", flutterV.Dart)
+		fmt.Printf("DevTools: %s\n", flutterV.DevTools)
+
+		// TODO: uncomment if needed
+		// flutterD, err := flutter.RunDoctor()
+		// if err != nil {
+		// 	return fmt.Errorf("failed run flutter doctor. %w", err)
+		// }
+		// fmt.Println(flutterD)
+
+		return nil
+	},
+}
+
 var buildCmd = &cobra.Command{
 	Use:   "build",
 	Short: "Build Flutter project for a client",
