@@ -6,6 +6,7 @@ import (
 	"flumint/internal/config"
 	"flumint/internal/flutter"
 	"flumint/internal/platform/android"
+	"flumint/internal/platform/web"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -39,8 +40,8 @@ var buildCmd = &cobra.Command{
 			panic(err)
 		}
 
-		// Patch Android build files
-		if platform == "android" {
+		switch platform {
+		case "android":
 			androidUtil, err := android.NewAndroid("./")
 			if err != nil {
 				panic(err)
@@ -65,6 +66,20 @@ var buildCmd = &cobra.Command{
 					panic(err)
 				}
 			}
+		case "web":
+			webUtil := web.NewWeb("./")
+
+			oldAppName, err := webUtil.GetAppName()
+			if err != nil {
+				panic(err)
+			}
+			if oldAppName != cfg.AppName {
+				if err := webUtil.SetAppName(cfg.AppName); err != nil {
+					panic(err)
+				}
+			}
+		default:
+			panic("unsupported platform: " + platform)
 		}
 
 		// Update pubspec.yaml
