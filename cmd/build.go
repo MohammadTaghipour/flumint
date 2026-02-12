@@ -4,6 +4,7 @@ import (
 	"flumint/internal/assets"
 	"flumint/internal/client"
 	"flumint/internal/config"
+	"flumint/internal/flutter"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -42,6 +43,9 @@ var buildCmd = &cobra.Command{
 		// Update pubspec.yaml
 
 		// Execute flutter build
+		if err := flutter.Build(platform, clientName, cfg); err != nil {
+			panic(err)
+		}
 
 		fmt.Println("Build finished successfully!")
 	},

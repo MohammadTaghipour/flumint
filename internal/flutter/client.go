@@ -8,19 +8,7 @@ import (
 	"strings"
 )
 
-type Client interface {
-	GetVersion() (*VersionInfo, error)
-	RunDoctor() (string, error)
-	Build(platform, clientName string, cfg *config.ClientConfig) error
-}
-
-type CLI struct{}
-
-func NewCLI() *CLI {
-	return &CLI{}
-}
-
-func (c *CLI) RunDoctor() (string, error) {
+func RunDoctor() (string, error) {
 	cmd := exec.Command("flutter", "doctor")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
@@ -29,7 +17,7 @@ func (c *CLI) RunDoctor() (string, error) {
 	return string(out), nil
 }
 
-func (c *CLI) GetVersion() (*VersionInfo, error) {
+func GetVersion() (*VersionInfo, error) {
 	cmd := exec.Command("flutter", "--version")
 	out, err := cmd.Output()
 	if err != nil {
@@ -39,7 +27,7 @@ func (c *CLI) GetVersion() (*VersionInfo, error) {
 	return parseVersion(string(out))
 }
 
-func (c *CLI) Build(platform, clientName string, cfg *config.ClientConfig) error {
+func Build(platform, clientName string, cfg *config.ClientConfig) error {
 	var cmd *exec.Cmd
 
 	dartDefines := []string{}
