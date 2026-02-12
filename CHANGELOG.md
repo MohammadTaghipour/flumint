@@ -1,4 +1,4 @@
-# 0.1.0
+# 1.0.0
 
 Initial release of **Flumint** – a multi-client Flutter build tool.
 
