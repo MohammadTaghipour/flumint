@@ -1,7 +1,14 @@
 package main
 
-import "flumint/cmd"
+import (
+	"flumint/cmd"
+	"fmt"
+	"os"
+)
 
 func main() {
-	cmd.Execute()
+	if err := cmd.Execute(); err != nil {
+		fmt.Fprintln(os.Stderr, "Error:", err)
+		os.Exit(1)
+	}
 }

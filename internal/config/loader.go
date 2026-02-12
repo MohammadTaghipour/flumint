@@ -20,7 +20,7 @@ func Load(clientPath string) (*ClientConfig, error) {
 	cfgFile := filepath.Join(clientPath, "config.json")
 	data, err := os.ReadFile(cfgFile)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read config.json: %v", err)
+		return nil, fmt.Errorf("can not read config.json: %v", err)
 	}
 
 	var cfg ClientConfig

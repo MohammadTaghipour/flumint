@@ -15,7 +15,7 @@ import (
 var buildCmd = &cobra.Command{
 	Use:   "build",
 	Short: "Build Flutter project for a client",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		clientName, _ := cmd.Flags().GetString("client")
 		platform, _ := cmd.Flags().GetString("platform")
 		env, _ := cmd.Flags().GetString("env")
@@ -25,45 +25,45 @@ var buildCmd = &cobra.Command{
 		// Resolve client
 		clientPath, err := client.Resolve(clientName)
 		if err != nil {
-			panic(err)
+			return fmt.Errorf("failed to resolve client: %w", err)
 		}
 
 		// Load config
 		cfg, err := config.Load(clientPath)
 		if err != nil {
-			panic(err)
+			return fmt.Errorf("failed to load config: %w", err)
 		}
-		println(cfg.PackageName)
 
 		// Inject assets
 		if err := assets.Inject(clientPath); err != nil {
-			panic(err)
+			return fmt.Errorf("failed to inject assets: %w", err)
 		}
 
 		switch platform {
 		case "android":
 			androidUtil, err := android.NewAndroid("./")
 			if err != nil {
-				panic(err)
+				return fmt.Errorf("failed to init Android: %w", err)
 			}
 
 			oldAppName, err := androidUtil.GetAppName()
 			if err != nil {
-				panic(err)
+				return fmt.Errorf("failed to fetch android app name: %w", err)
 			}
+
 			if oldAppName != cfg.AppName {
 				if err := androidUtil.SetAppName(cfg.AppName); err != nil {
-					panic(err)
+					return fmt.Errorf("failed to set android app name: %w", err)
 				}
 			}
 
 			oldPackageName, err := androidUtil.GetBundleId()
 			if err != nil {
-				panic(err)
+				return fmt.Errorf("failed to fetch android package name: %w", err)
 			}
 			if oldPackageName != cfg.PackageName {
 				if err := androidUtil.SetBundleId(cfg.PackageName); err != nil {
-					panic(err)
+					return fmt.Errorf("failed to set android package name: %w", err)
 				}
 			}
 		case "web":
@@ -71,25 +71,27 @@ var buildCmd = &cobra.Command{
 
 			oldAppName, err := webUtil.GetAppName()
 			if err != nil {
-				panic(err)
+				return fmt.Errorf("failed to fetch web app name: %w", err)
 			}
 			if oldAppName != cfg.AppName {
 				if err := webUtil.SetAppName(cfg.AppName); err != nil {
-					panic(err)
+					return fmt.Errorf("failed to set web app name: %w", err)
 				}
 			}
 		default:
-			panic("unsupported platform: " + platform)
+			return fmt.Errorf("unsupported platform: %s", platform)
 		}
 
 		// Update pubspec.yaml
 
 		// Execute flutter build
 		if err := flutter.Build(platform, clientName, cfg); err != nil {
-			panic(err)
+			return fmt.Errorf("failed to build app. error: %w", err)
 		}
 
 		fmt.Println("Build finished successfully!")
+
+		return nil
 	},
 }
 

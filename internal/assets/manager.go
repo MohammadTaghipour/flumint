@@ -13,14 +13,14 @@ func Inject(clientPath string) error {
 
 	// copy assets
 	if err := utils.CopyDirectory(srcAssets, destAssets); err != nil {
-		return fmt.Errorf("failed to copy assets: %v", err)
+		return fmt.Errorf("can not copy assets: %v", err)
 	}
 
 	// copy google-services.json for Android
 	srcGoogle := filepath.Join(clientPath, "android", "google-services.json")
 	destGoogle := filepath.Join("android", "app", "google-services.json")
 	if err := utils.CopyFile(srcGoogle, destGoogle); err != nil {
-		return fmt.Errorf("failed to copy google-services.json: %v", err)
+		return fmt.Errorf("can not copy google-services.json: %v", err)
 	}
 
 	return nil
