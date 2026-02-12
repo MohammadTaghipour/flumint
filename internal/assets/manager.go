@@ -9,7 +9,7 @@ import (
 // Inject copies client assets into lib/assets and android/google-services.json
 func Inject(clientPath string) error {
 	srcAssets := filepath.Join(clientPath, "assets")
-	destAssets := "lib/assets"
+	destAssets := "assets"
 
 	// copy assets
 	if err := utils.CopyDirectory(srcAssets, destAssets); err != nil {
