@@ -2,6 +2,7 @@ package android
 
 import (
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -98,4 +99,161 @@ func (a *Android) SetPackageNameInManifest(newPackageName string) error {
 		}
 	}
 	return nil
+}
+
+func (a *Android) SetPackageNameInActivities(newPackageName string) error {
+	var javaKotlinFiles []string
+
+	err := filepath.Walk(a.config.ActivityPath, func(path string, info fs.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			return nil
+		}
+
+		ext := filepath.Ext(path)
+		if ext == ".java" || ext == ".kt" {
+			javaKotlinFiles = append(javaKotlinFiles, path)
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
+	if len(javaKotlinFiles) == 0 {
+		return nil
+	}
+
+	oldPackageName, err := a.extractPackageName(javaKotlinFiles[0])
+	if err != nil {
+		return err
+	}
+
+	if oldPackageName == newPackageName {
+		return nil
+	}
+
+	newPackagePath := filepath.Join(
+		a.config.ActivityPath,
+		filepath.FromSlash(strings.ReplaceAll(newPackageName, ".", "/")),
+	)
+
+	if err := os.MkdirAll(newPackagePath, os.ModePerm); err != nil {
+		return err
+	}
+
+	type fileMove struct {
+		oldPath string
+		newPath string
+	}
+
+	var moves []fileMove
+
+	for _, oldPath := range javaKotlinFiles {
+		content, err := os.ReadFile(oldPath)
+		if err != nil {
+			return err
+		}
+
+		ext := filepath.Ext(oldPath)
+		updated := updatePackageAndImports(string(content), oldPackageName, newPackageName, ext)
+
+		rel, err := filepath.Rel(a.config.ActivityPath, oldPath)
+		if err != nil {
+			return err
+		}
+
+		relDir := filepath.Dir(rel)
+		fileName := filepath.Base(oldPath)
+
+		newDir := filepath.Join(newPackagePath, relDir)
+		if err := os.MkdirAll(newDir, os.ModePerm); err != nil {
+			return err
+		}
+
+		newPath := filepath.Join(newDir, fileName)
+
+		if err := os.WriteFile(newPath, []byte(updated), 0644); err != nil {
+			return err
+		}
+
+		moves = append(moves, fileMove{
+			oldPath: oldPath,
+			newPath: newPath,
+		})
+	}
+
+	for _, m := range moves {
+		if err := os.Remove(m.oldPath); err != nil {
+			return err
+		}
+	}
+
+	return utils.DeleteEmptyDirs(a.config.ActivityPath)
+}
+
+func (a *Android) extractPackageName(filePath string) (string, error) {
+	content, err := os.ReadFile(filePath)
+	if err != nil {
+		return "", err
+	}
+
+	lines := strings.Split(string(content), "\n")
+	for _, line := range lines {
+		trimmedLine := strings.TrimSpace(line)
+		if strings.HasPrefix(trimmedLine, "package ") {
+			packagePart := strings.TrimPrefix(trimmedLine, "package ")
+			packageName := strings.TrimSuffix(packagePart, ";")
+			return strings.TrimSpace(packageName), nil
+		}
+	}
+
+	return "", fmt.Errorf("package name not found in file: %s", filePath)
+}
+
+func updatePackageAndImports(
+	content string,
+	oldPkg string,
+	newPkg string,
+	ext string,
+) string {
+
+	lines := strings.Split(content, "\n")
+	var result []string
+
+	for _, line := range lines {
+		trimmed := strings.TrimSpace(line)
+
+		if strings.HasPrefix(trimmed, "package ") {
+			if ext == ".kt" {
+				result = append(result, "package "+newPkg)
+			} else {
+				result = append(result, "package "+newPkg+";")
+			}
+			continue
+		}
+
+		if strings.HasPrefix(trimmed, "import ") {
+			importPath := strings.TrimPrefix(trimmed, "import ")
+			importPath = strings.TrimSuffix(importPath, ";")
+			importPath = strings.TrimSpace(importPath)
+
+			if strings.HasPrefix(importPath, oldPkg+".") || importPath == oldPkg {
+				newImport := strings.Replace(importPath, oldPkg, newPkg, 1)
+
+				if ext == ".kt" {
+					result = append(result, "import "+newImport)
+				} else {
+					result = append(result, "import "+newImport+";")
+				}
+				continue
+			}
+		}
+
+		result = append(result, line)
+	}
+
+	return strings.Join(result, "\n")
 }
