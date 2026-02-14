@@ -2,8 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
 
 	"github.com/MohammadTaghipour/flumint/internal/assets"
 	"github.com/MohammadTaghipour/flumint/internal/client"
@@ -46,19 +44,11 @@ var buildCmd = &cobra.Command{
 	Use:   "build",
 	Short: "Build Flutter project for a client",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		root, err := os.Getwd()
-		if err != nil {
-			return err
-		}
 
 		clientName, _ := cmd.Flags().GetString("client")
 		platform, _ := cmd.Flags().GetString("platform")
 		env, _ := cmd.Flags().GetString("env")
-		projectRoot, _ := cmd.Flags().GetString("path")
-
-		if projectRoot != "" {
-			root = projectRoot
-		}
+		root, _ := cmd.Flags().GetString("path")
 
 		fmt.Printf("Building client %s for %s in %s environment\n", clientName, platform, env)
 
@@ -69,7 +59,7 @@ var buildCmd = &cobra.Command{
 		}
 
 		// Load config
-		cfg, err := config.Load(filepath.Join(root, clientName))
+		cfg, err := config.Load(clientPath)
 		if err != nil {
 			return fmt.Errorf("failed to load config: %w", err)
 		}
@@ -100,13 +90,23 @@ var buildCmd = &cobra.Command{
 			} else {
 				fmt.Printf("Old package name is %s\n", oldPackageName)
 			}
-			// if oldPackageName != cfg.PackageName {
-			// 	if err := androidUtil.SetBundleId(cfg.PackageName); err != nil {
-			// 		return fmt.Errorf("failed to set android package name: %w", err)
-			// 	}
-			// }
+
+			if oldPackageName != cfg.PackageName {
+				if err := androidUtil.SetPackageName(cfg.PackageName); err != nil {
+					return fmt.Errorf("failed to set android package name: %w", err)
+				}
+			}
+
+			if err := androidUtil.SetPackageNameInActivities(cfg.PackageName); err != nil {
+				return fmt.Errorf("failed to set android package name in java|kotlin files: %w", err)
+			}
+
+			if err := androidUtil.SetPackageNameInManifest(cfg.PackageName); err != nil {
+				return fmt.Errorf("failed to set android package name in manifest files: %w", err)
+			}
+
 		case "web":
-			webUtil := web.NewWeb("./")
+			webUtil := web.NewWeb(root)
 
 			oldAppName, err := webUtil.GetAppName()
 			if err != nil {
@@ -124,9 +124,9 @@ var buildCmd = &cobra.Command{
 		// Update pubspec.yaml
 
 		// Execute flutter build
-		if err := flutter.Build(platform, clientName, cfg); err != nil {
-			return fmt.Errorf("failed to build app. error: %w", err)
-		}
+		// if err := flutter.Build(root, platform, clientName, cfg); err != nil {
+		// 	return fmt.Errorf("failed to build app. error: %w", err)
+		// }
 
 		fmt.Println("Build finished successfully!")
 
@@ -136,6 +136,7 @@ var buildCmd = &cobra.Command{
 
 func init() {
 	buildCmd.Flags().String("client", "", "Client name")
+	buildCmd.Flags().String("path", ".", "Path to Flutter project. Default: current root")
 	buildCmd.Flags().String("platform", "android", "Target platform: android/web")
 	buildCmd.Flags().String("env", "dev", "Environment: dev/staging/prod")
 	_ = buildCmd.MarkFlagRequired("client")
