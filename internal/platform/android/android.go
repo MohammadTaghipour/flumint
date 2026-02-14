@@ -134,15 +134,6 @@ func (a *Android) SetPackageNameInActivities(newPackageName string) error {
 		return nil
 	}
 
-	newPackagePath := filepath.Join(
-		a.config.ActivityPath,
-		filepath.FromSlash(strings.ReplaceAll(newPackageName, ".", "/")),
-	)
-
-	if err := os.MkdirAll(newPackagePath, os.ModePerm); err != nil {
-		return err
-	}
-
 	type fileMove struct {
 		oldPath string
 		newPath string
@@ -159,20 +150,23 @@ func (a *Android) SetPackageNameInActivities(newPackageName string) error {
 		ext := filepath.Ext(oldPath)
 		updated := updatePackageAndImports(string(content), oldPackageName, newPackageName, ext)
 
-		rel, err := filepath.Rel(a.config.ActivityPath, oldPath)
-		if err != nil {
+		baseType := "java"
+		if ext == ".kt" {
+			baseType = "kotlin"
+		}
+
+		baseSourcePath := filepath.Join(a.config.ActivityPath, baseType)
+		newPackagePath := filepath.Join(
+			baseSourcePath,
+			filepath.FromSlash(strings.ReplaceAll(newPackageName, ".", "/")),
+		)
+
+		if err := os.MkdirAll(newPackagePath, os.ModePerm); err != nil {
 			return err
 		}
 
-		relDir := filepath.Dir(rel)
 		fileName := filepath.Base(oldPath)
-
-		newDir := filepath.Join(newPackagePath, relDir)
-		if err := os.MkdirAll(newDir, os.ModePerm); err != nil {
-			return err
-		}
-
-		newPath := filepath.Join(newDir, fileName)
+		newPath := filepath.Join(newPackagePath, fileName)
 
 		if err := os.WriteFile(newPath, []byte(updated), 0644); err != nil {
 			return err
