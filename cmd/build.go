@@ -69,31 +69,30 @@ var buildCmd = &cobra.Command{
 
 		switch platform {
 		case "android":
-			androidUtil, err := android.NewAndroid("./")
-			if err != nil {
-				return fmt.Errorf("failed to init Android: %w", err)
-			}
+			androidUtil := android.NewAndroid()
 
-			oldAppName, err := androidUtil.GetAppName()
-			if err != nil {
-				return fmt.Errorf("failed to fetch android app name: %w", err)
-			}
+			// oldAppName, err := androidUtil.GetAppName()
+			// if err != nil {
+			// 	return fmt.Errorf("failed to fetch android app name: %w", err)
+			// }
 
-			if oldAppName != cfg.AppName {
-				if err := androidUtil.SetAppName(cfg.AppName); err != nil {
-					return fmt.Errorf("failed to set android app name: %w", err)
-				}
-			}
+			// if oldAppName != cfg.AppName {
+			// 	if err := androidUtil.SetAppName(cfg.AppName); err != nil {
+			// 		return fmt.Errorf("failed to set android app name: %w", err)
+			// 	}
+			// }
 
-			oldPackageName, err := androidUtil.GetBundleId()
+			oldPackageName, err := androidUtil.GetPackageName()
 			if err != nil {
 				return fmt.Errorf("failed to fetch android package name: %w", err)
+			} else {
+				fmt.Printf("Old package name is %s\n", oldPackageName)
 			}
-			if oldPackageName != cfg.PackageName {
-				if err := androidUtil.SetBundleId(cfg.PackageName); err != nil {
-					return fmt.Errorf("failed to set android package name: %w", err)
-				}
-			}
+			// if oldPackageName != cfg.PackageName {
+			// 	if err := androidUtil.SetBundleId(cfg.PackageName); err != nil {
+			// 		return fmt.Errorf("failed to set android package name: %w", err)
+			// 	}
+			// }
 		case "web":
 			webUtil := web.NewWeb("./")
 
