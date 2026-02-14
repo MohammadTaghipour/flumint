@@ -9,6 +9,8 @@ import (
 	"github.com/MohammadTaghipour/flumint/internal/flutter"
 	"github.com/MohammadTaghipour/flumint/internal/platform/android"
 	"github.com/MohammadTaghipour/flumint/internal/platform/web"
+	"github.com/MohammadTaghipour/flumint/internal/utils"
+	"github.com/briandowns/spinner"
 
 	"github.com/spf13/cobra"
 )
@@ -17,24 +19,28 @@ var doctorCmd = &cobra.Command{
 	Use:   "doctor",
 	Short: "Check Flumint health and status of components",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fmt.Printf("Running Flumint doctor...\n")
+		fmt.Println()
+
+		s := spinner.New(spinner.CharSets[utils.SpinnerCharset], utils.SpinnerDuration)
+		s.Suffix = " Running Flumint doctor..."
+		s.Color(utils.SpinnerColor)
+		s.Start()
 
 		flutterV, err := flutter.GetVersion()
 		if err != nil {
-			return fmt.Errorf("failed to get flutter version. %w", err)
+			s.Stop()
+			fmt.Println("Flumint doctor failed ✖")
+			return fmt.Errorf("failed to get flutter version: %w", err)
 		}
 
-		fmt.Printf("Flutter version: %s\n", flutterV.Version)
-		fmt.Printf("Flutter channel: %s\n", flutterV.Channel)
-		fmt.Printf("Dart version: %s\n", flutterV.Dart)
-		fmt.Printf("DevTools: %s\n", flutterV.DevTools)
-
-		// TODO: uncomment if needed
-		// flutterD, err := flutter.RunDoctor()
-		// if err != nil {
-		// 	return fmt.Errorf("failed run flutter doctor. %w", err)
-		// }
-		// fmt.Println(flutterD)
+		s.Stop()
+		fmt.Println(utils.BrandWriter("Flumint Doctor Information"))
+		fmt.Println("------------------------")
+		fmt.Printf("Version   : %s\n", flutterV.Version)
+		fmt.Printf("Channel   : %s\n", flutterV.Channel)
+		fmt.Printf("Dart      : %s\n", flutterV.Dart)
+		fmt.Printf("DevTools  : %s\n", flutterV.DevTools)
+		fmt.Println()
 
 		return nil
 	},
