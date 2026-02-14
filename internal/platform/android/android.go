@@ -70,7 +70,8 @@ func (a *Android) SetPackageName(newPackageName string) error {
 	if err != nil {
 		return err
 	}
-	if err := utils.ReplaceInFileRegex(gradlePath, `applicationId\s*=?\s*"(.*)"`, newPackageName); err != nil {
+	replacement := fmt.Sprintf(`applicationId = "%s"`, newPackageName)
+	if err := utils.ReplaceInFileRegex(gradlePath, `applicationId\s*=?\s*"(.*)"`, replacement); err != nil {
 		return fmt.Errorf("can not set package name in %s to %s", gradlePath, newPackageName)
 	}
 	return nil
