@@ -75,3 +75,27 @@ func (a *Android) SetPackageName(newPackageName string) error {
 	}
 	return nil
 }
+
+func (a *Android) SetPackageNameInManifest(newPackageName string) error {
+	manifests := []string{
+		a.config.ManifestMainPath,
+		a.config.ManifestDebugPath,
+		a.config.ManifestProfilePath,
+	}
+	for _, path := range manifests {
+		if utils.FileExists(path) {
+			content, err := os.ReadFile(path)
+			if err != nil {
+				return fmt.Errorf("can not read file %s. %w", path, err)
+			}
+
+			reg := regexp.MustCompile(`applicationId\s*=?\s*"(.*)"`)
+			match := reg.FindStringSubmatch(string(content))
+			if match != nil {
+				replacement := fmt.Sprintf("package=\"%s\">", newPackageName)
+				utils.ReplaceInFileRegex(a.config.ManifestMainPath, `(package=.*)`, replacement)
+			}
+		}
+	}
+	return nil
+}
