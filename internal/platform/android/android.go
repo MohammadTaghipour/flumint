@@ -59,7 +59,7 @@ func (a *Android) GetPackageName() (string, error) {
 
 	reg := regexp.MustCompile(`applicationId\s*=?\s*"(.*)"`)
 	match := reg.FindStringSubmatch(string(content))
-	if match == nil {
+	if len(match) < 2 {
 		return "", fmt.Errorf("applicationId not found in %s", gradlePath)
 	}
 	return match[1], nil
@@ -91,6 +91,47 @@ func (a *Android) SetPackageNameInManifest(newPackageName string) error {
 
 		if err := utils.ReplaceInFileRegex(path, `package="[^"]*"`, fmt.Sprintf(`package="%s"`, newPackageName)); err != nil {
 			return fmt.Errorf("cannot change manifest package %s: %w", path, err)
+		}
+	}
+
+	return nil
+}
+
+func (a *Android) GetAppName() (string, error) {
+	if !utils.FileExists(a.config.ManifestMainPath) {
+		return "", fmt.Errorf("file not found %s", a.config.ManifestMainPath)
+	}
+
+	content, err := os.ReadFile(a.config.ManifestMainPath)
+	if err != nil {
+		return "", fmt.Errorf("can not read file %s. %w", a.config.ManifestMainPath, err)
+	}
+
+	reg := regexp.MustCompile(`android:label="(.*?)"`)
+	match := reg.FindStringSubmatch(string(content))
+	if len(match) < 2 {
+		return "", fmt.Errorf("app name not found in %s", a.config.ManifestMainPath)
+	}
+	return match[1], nil
+
+}
+
+func (a *Android) SetAppName(name string) error {
+	files := []string{
+		a.config.ManifestMainPath,
+		a.config.ManifestDebugPath,
+		a.config.ManifestProfilePath,
+	}
+
+	for _, file := range files {
+		if utils.FileExists(file) {
+			if err := utils.ReplaceInFileRegex(
+				file,
+				`android:label="(.*?)"`,
+				fmt.Sprintf(`android:label="%s"`, name),
+			); err != nil {
+				return fmt.Errorf("cannot change app name in %s. %w", file, err)
+			}
 		}
 	}
 

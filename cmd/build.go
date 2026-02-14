@@ -73,16 +73,16 @@ var buildCmd = &cobra.Command{
 		case "android":
 			androidUtil := android.NewAndroid(root)
 
-			// oldAppName, err := androidUtil.GetAppName()
-			// if err != nil {
-			// 	return fmt.Errorf("failed to fetch android app name: %w", err)
-			// }
+			oldAppName, err := androidUtil.GetAppName()
+			if err != nil {
+				return fmt.Errorf("failed to fetch android app name: %w", err)
+			}
 
-			// if oldAppName != cfg.AppName {
-			// 	if err := androidUtil.SetAppName(cfg.AppName); err != nil {
-			// 		return fmt.Errorf("failed to set android app name: %w", err)
-			// 	}
-			// }
+			if oldAppName != cfg.AppName {
+				if err := androidUtil.SetAppName(cfg.AppName); err != nil {
+					return fmt.Errorf("failed to set android app name: %w", err)
+				}
+			}
 
 			oldPackageName, err := androidUtil.GetPackageName()
 			if err != nil {
