@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/MohammadTaghipour/flumint/internal/assets"
 	"github.com/MohammadTaghipour/flumint/internal/client"
@@ -34,12 +35,14 @@ var doctorCmd = &cobra.Command{
 		}
 
 		s.Stop()
+
 		fmt.Println(utils.BrandWriter("Flumint Doctor Information"))
 		fmt.Println("------------------------")
-		fmt.Printf("Version   : %s\n", flutterV.Version)
-		fmt.Printf("Channel   : %s\n", flutterV.Channel)
-		fmt.Printf("Dart      : %s\n", flutterV.Dart)
-		fmt.Printf("DevTools  : %s\n", flutterV.DevTools)
+		fmt.Println(utils.SuccessWriter("Version    : " + flutterV.Version))
+		fmt.Println(utils.SuccessWriter("Channel    : " + flutterV.Channel))
+		fmt.Println(utils.SuccessWriter("Dart       : " + flutterV.Dart))
+		fmt.Println(utils.SuccessWriter("DevTools   : " + flutterV.DevTools))
+
 		fmt.Println()
 
 		return nil
@@ -50,65 +53,99 @@ var buildCmd = &cobra.Command{
 	Use:   "build",
 	Short: "Build Flutter project for a client",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		fmt.Println()
+
+		s := spinner.New(spinner.CharSets[utils.SpinnerCharset], utils.SpinnerDuration)
+		s.Suffix = " Running Flumint build..."
+		s.Color(utils.SpinnerColor)
+		s.Start()
+
+		time.Sleep(time.Second)
+
+		s.Stop()
 
 		clientName, _ := cmd.Flags().GetString("client")
 		platform, _ := cmd.Flags().GetString("platform")
 		env, _ := cmd.Flags().GetString("env")
 		root, _ := cmd.Flags().GetString("path")
 
-		fmt.Printf("Building client %s for %s in %s environment\n", clientName, platform, env)
+		fmt.Printf("Building client %s for %s in %s environment...\n", clientName, platform, env)
 
-		// Resolve client
 		clientPath, err := client.Resolve(root, clientName)
-		if err != nil {
+		if err != nil || clientPath == "" {
+			fmt.Println(utils.ErrorWriter("Build failed."))
 			return fmt.Errorf("failed to resolve client: %w", err)
 		}
+		fmt.Printf("client path resolved: %s\n", clientPath)
 
-		// Load config
 		cfg, err := config.Load(clientPath)
 		if err != nil {
+			fmt.Println(utils.ErrorWriter("Build failed."))
 			return fmt.Errorf("failed to load config: %w", err)
 		}
+		fmt.Println("config.json detected")
 
-		// Inject assets
+		fmt.Println(utils.InfoWriter(fmt.Sprintf("AppName     : %s", cfg.AppName)))
+		fmt.Println(utils.InfoWriter(fmt.Sprintf("PackageName : %s", cfg.PackageName)))
+
+		s.Suffix = " Injecting client assets and files..."
+		s.Start()
+		time.Sleep(time.Second * 2)
 		if err := assets.Inject(root, clientPath); err != nil {
+			fmt.Println(utils.ErrorWriter("Build failed."))
 			return fmt.Errorf("failed to inject assets: %w", err)
 		}
+		s.Stop()
+		fmt.Println("Assets injected sucessfully")
 
 		switch platform {
 		case "android":
 			androidUtil := android.NewAndroid(root)
 
-			oldAppName, err := androidUtil.GetAppName()
+			currAppName, err := androidUtil.GetAppName()
 			if err != nil {
+				fmt.Println(utils.ErrorWriter("Build failed."))
 				return fmt.Errorf("failed to fetch android app name: %w", err)
 			}
+			fmt.Printf("current app name is: %s\n", utils.InfoWriter(currAppName))
 
-			if oldAppName != cfg.AppName {
+			if currAppName != cfg.AppName {
 				if err := androidUtil.SetAppName(cfg.AppName); err != nil {
+					fmt.Println(utils.ErrorWriter("Build failed."))
 					return fmt.Errorf("failed to set android app name: %w", err)
 				}
-			}
-
-			oldPackageName, err := androidUtil.GetPackageName()
-			if err != nil {
-				return fmt.Errorf("failed to fetch android package name: %w", err)
+				fmt.Printf("app name changed from %s to %s\n", utils.InfoWriter(currAppName), utils.InfoWriter(cfg.AppName))
 			} else {
-				fmt.Printf("Old package name is %s\n", oldPackageName)
+				fmt.Println("no changes in app name. current and new app names are same. ")
 			}
 
-			if oldPackageName != cfg.PackageName {
+			currPackageName, err := androidUtil.GetPackageName()
+			if err != nil {
+				fmt.Println(utils.ErrorWriter("Build failed."))
+				return fmt.Errorf("failed to fetch android package name: %w", err)
+			}
+			fmt.Printf("current package name is: %s\n", utils.InfoWriter(currPackageName))
+
+			if currPackageName != cfg.PackageName {
 				if err := androidUtil.SetPackageName(cfg.PackageName); err != nil {
+					fmt.Println(utils.ErrorWriter("Build failed."))
 					return fmt.Errorf("failed to set android package name: %w", err)
 				}
-			}
+				fmt.Printf("package name changed from %s to %s\n", utils.InfoWriter(currPackageName), utils.InfoWriter(cfg.PackageName))
 
-			if err := androidUtil.SetPackageNameInActivities(cfg.PackageName); err != nil {
-				return fmt.Errorf("failed to set android package name in java|kotlin files: %w", err)
-			}
+				if err := androidUtil.SetPackageNameInActivities(cfg.PackageName); err != nil {
+					fmt.Println(utils.ErrorWriter("Build failed."))
+					return fmt.Errorf("failed to update package name in java/kotlin files: %w", err)
+				}
+				fmt.Printf("package name in java|kotlin files changed to %s\n", utils.InfoWriter(cfg.PackageName))
 
-			if err := androidUtil.SetPackageNameInManifest(cfg.PackageName); err != nil {
-				return fmt.Errorf("failed to set android package name in manifest files: %w", err)
+				if err := androidUtil.SetPackageNameInManifest(cfg.PackageName); err != nil {
+					fmt.Println(utils.ErrorWriter("Build failed."))
+					return fmt.Errorf("failed to update package name in manifest files: %w", err)
+				}
+				fmt.Printf("package name in AndroidManifest.xml file changed to %s\n", utils.InfoWriter(cfg.PackageName))
+			} else {
+				fmt.Println("no changes in package name. current and new package names are same. ")
 			}
 
 		case "web":
@@ -116,25 +153,28 @@ var buildCmd = &cobra.Command{
 
 			oldAppName, err := webUtil.GetAppName()
 			if err != nil {
+				fmt.Println(utils.ErrorWriter("Build failed."))
 				return fmt.Errorf("failed to fetch web app name: %w", err)
 			}
 			if oldAppName != cfg.AppName {
 				if err := webUtil.SetAppName(cfg.AppName); err != nil {
+					fmt.Println(utils.ErrorWriter("Build failed."))
 					return fmt.Errorf("failed to set web app name: %w", err)
 				}
 			}
 		default:
+			fmt.Println(utils.ErrorWriter("Build failed."))
 			return fmt.Errorf("unsupported platform: %s", platform)
 		}
 
-		// Update pubspec.yaml
+		if err := flutter.Build(root, platform, clientName, cfg); err != nil {
+			fmt.Println(utils.ErrorWriter("Build failed."))
+			return fmt.Errorf("failed to build app: %w", err)
+		}
 
-		// Execute flutter build
-		// if err := flutter.Build(root, platform, clientName, cfg); err != nil {
-		// 	return fmt.Errorf("failed to build app. error: %w", err)
-		// }
-
-		fmt.Println("Build finished successfully!")
+		fmt.Println()
+		fmt.Println(utils.SuccessWriter("Build finished successfully"))
+		fmt.Println()
 
 		return nil
 	},
