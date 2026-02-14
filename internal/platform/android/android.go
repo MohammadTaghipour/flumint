@@ -15,8 +15,7 @@ type Android struct {
 	config Config
 }
 
-func NewAndroid() *Android {
-	root := "./"
+func NewAndroid(root string) *Android {
 	return &Android{
 		config: Config{
 			ProjectRootPath:     root,

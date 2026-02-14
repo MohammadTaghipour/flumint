@@ -7,12 +7,12 @@ import (
 )
 
 // Inject copies client files into project by keeping its file tree
-func Inject(clientPath string) error {
+func Inject(root, clientPath string) error {
 	if !utils.DirectoryExists(clientPath) {
 		return fmt.Errorf("client path does not exist: %s", clientPath)
 	}
 
-	return utils.CopyDirectory(clientPath, "./")
+	return utils.CopyDirectory(clientPath, root)
 
 	//srcAssets := filepath.Join(clientPath, "assets")
 	//destAssets := "assets"

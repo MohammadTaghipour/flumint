@@ -8,8 +8,8 @@ import (
 )
 
 // Resolve checks if the client exists and returns its path
-func Resolve(clientName string) (string, error) {
-	clientPath := filepath.Join("clients", clientName)
+func Resolve(root, clientName string) (string, error) {
+	clientPath := filepath.Join(root, "clients", clientName)
 
 	if exists := utils.DirectoryExists(clientPath); !exists {
 		return "", fmt.Errorf("client %s does not exist", clientPath)

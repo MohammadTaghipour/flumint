@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 
 	"github.com/MohammadTaghipour/flumint/internal/assets"
 	"github.com/MohammadTaghipour/flumint/internal/client"
@@ -44,32 +46,42 @@ var buildCmd = &cobra.Command{
 	Use:   "build",
 	Short: "Build Flutter project for a client",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		root, err := os.Getwd()
+		if err != nil {
+			return err
+		}
+
 		clientName, _ := cmd.Flags().GetString("client")
 		platform, _ := cmd.Flags().GetString("platform")
 		env, _ := cmd.Flags().GetString("env")
+		projectRoot, _ := cmd.Flags().GetString("path")
+
+		if projectRoot != "" {
+			root = projectRoot
+		}
 
 		fmt.Printf("Building client %s for %s in %s environment\n", clientName, platform, env)
 
 		// Resolve client
-		clientPath, err := client.Resolve(clientName)
+		clientPath, err := client.Resolve(root, clientName)
 		if err != nil {
 			return fmt.Errorf("failed to resolve client: %w", err)
 		}
 
 		// Load config
-		cfg, err := config.Load(clientPath)
+		cfg, err := config.Load(filepath.Join(root, clientName))
 		if err != nil {
 			return fmt.Errorf("failed to load config: %w", err)
 		}
 
 		// Inject assets
-		if err := assets.Inject(clientPath); err != nil {
+		if err := assets.Inject(root, clientPath); err != nil {
 			return fmt.Errorf("failed to inject assets: %w", err)
 		}
 
 		switch platform {
 		case "android":
-			androidUtil := android.NewAndroid()
+			androidUtil := android.NewAndroid(root)
 
 			// oldAppName, err := androidUtil.GetAppName()
 			// if err != nil {
