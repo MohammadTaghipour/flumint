@@ -28,7 +28,7 @@ func GetVersion() (*VersionInfo, error) {
 	return parseVersion(string(out))
 }
 
-func Build(platform, clientName string, cfg *config.ClientConfig) error {
+func Build(root, platform, clientName string, cfg *config.ClientConfig) error {
 	var cmd *exec.Cmd
 
 	dartDefines := []string{}
@@ -49,6 +49,8 @@ func Build(platform, clientName string, cfg *config.ClientConfig) error {
 	default:
 		return fmt.Errorf("unsupported platform: %s", platform)
 	}
+
+	cmd.Dir = root
 
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
