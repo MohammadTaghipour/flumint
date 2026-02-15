@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/MohammadTaghipour/flumint/internal/utils"
 )
 
 type Web struct {
@@ -16,6 +18,7 @@ type Web struct {
 func DefaultWebConfig(root string) Config {
 	return Config{
 		IndexHTMLPath: filepath.Join(root, "web", "index.html"),
+		ManifestPath:  filepath.Join(root, "web", "manifest.json"),
 	}
 }
 
@@ -26,30 +29,33 @@ func NewWeb(root string) *Web {
 }
 
 func (w *Web) GetAppName() (string, error) {
-	data, err := os.ReadFile(w.Config.IndexHTMLPath)
+	path := w.Config.IndexHTMLPath
+	if !utils.FileExists(path) {
+		return "", fmt.Errorf("file not found %s", path)
+	}
+	content, err := os.ReadFile(path)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("cannot read file %s. %w", path, err)
 	}
 
-	lines := strings.Split(string(data), "\n")
 	titleRegex := regexp.MustCompile(`<title>(.*?)</title>`)
-
-	for _, line := range lines {
-		if titleRegex.MatchString(line) {
-			match := titleRegex.FindStringSubmatch(line)
-			if len(match) > 1 {
-				return strings.TrimSpace(match[1]), nil
-			}
-		}
+	match := titleRegex.FindStringSubmatch(string(content))
+	if len(match) > 1 {
+		return strings.TrimSpace(match[1]), nil
 	}
 
 	return "", errors.New("title tag not found in index.html")
 }
 
 func (w *Web) SetAppName(appName string) error {
+	path := w.Config.IndexHTMLPath
+	if !utils.FileExists(path) {
+		return fmt.Errorf("file not found %s", path)
+	}
+
 	data, err := os.ReadFile(w.Config.IndexHTMLPath)
 	if err != nil {
-		return err
+		return fmt.Errorf("cannot read file %s. %w", path, err)
 	}
 
 	lines := strings.Split(string(data), "\n")
@@ -58,7 +64,7 @@ func (w *Web) SetAppName(appName string) error {
 
 	for i, line := range lines {
 		if titleRegex.MatchString(line) {
-			lines[i] = fmt.Sprintf("  <title>%s</title>", appName)
+			lines[i] = fmt.Sprintf("\t<title>%s</title>", appName)
 			updated = true
 			break
 		}
@@ -68,5 +74,9 @@ func (w *Web) SetAppName(appName string) error {
 		return errors.New("title tag not found in index.html")
 	}
 
-	return os.WriteFile(w.Config.IndexHTMLPath, []byte(strings.Join(lines, "\n")), os.ModePerm)
+	if err := os.WriteFile(w.Config.IndexHTMLPath, []byte(strings.Join(lines, "\n")), os.ModePerm); err != nil {
+		return fmt.Errorf("cannot write file %s. %w", path, err)
+	}
+
+	return nil
 }

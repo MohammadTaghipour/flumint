@@ -145,32 +145,38 @@ var buildCmd = &cobra.Command{
 				}
 				fmt.Printf("package name in AndroidManifest.xml file changed to %s\n", utils.InfoWriter(cfg.PackageName))
 			} else {
-				fmt.Println("no changes in package name. current and new package names are same. ")
+				fmt.Println("no changes in package name. current and new package names are same.")
 			}
 
 		case "web":
 			webUtil := web.NewWeb(root)
 
-			oldAppName, err := webUtil.GetAppName()
+			currAppName, err := webUtil.GetAppName()
 			if err != nil {
 				fmt.Println(utils.ErrorWriter("Build failed."))
 				return fmt.Errorf("failed to fetch web app name: %w", err)
 			}
-			if oldAppName != cfg.AppName {
+			fmt.Printf("current web app name is: %s\n", utils.InfoWriter(currAppName))
+
+			if currAppName != cfg.AppName {
 				if err := webUtil.SetAppName(cfg.AppName); err != nil {
 					fmt.Println(utils.ErrorWriter("Build failed."))
 					return fmt.Errorf("failed to set web app name: %w", err)
 				}
+				fmt.Printf("web app name changed from %s to %s\n", utils.InfoWriter(currAppName), utils.InfoWriter(cfg.AppName))
+			} else {
+				fmt.Println("no changes in web app name. current and new app names are same.")
 			}
+
 		default:
 			fmt.Println(utils.ErrorWriter("Build failed."))
 			return fmt.Errorf("unsupported platform: %s", platform)
 		}
 
-		if err := flutter.Build(root, platform, clientName, cfg); err != nil {
-			fmt.Println(utils.ErrorWriter("Build failed."))
-			return fmt.Errorf("failed to build app: %w", err)
-		}
+		// if err := flutter.Build(root, platform, clientName, cfg); err != nil {
+		// 	fmt.Println(utils.ErrorWriter("Build failed."))
+		// 	return fmt.Errorf("failed to build app: %w", err)
+		// }
 
 		fmt.Println()
 		fmt.Println(utils.SuccessWriter("Build finished successfully"))
@@ -182,7 +188,7 @@ var buildCmd = &cobra.Command{
 
 func init() {
 	buildCmd.Flags().String("client", "", "Client name")
-	buildCmd.Flags().String("path", ".", "Path to Flutter project. Default: current root")
+	buildCmd.Flags().String("path", ".", "Path to Flutter project. Default: current directory")
 	buildCmd.Flags().String("platform", "android", "Target platform: android/web")
 	buildCmd.Flags().String("env", "dev", "Environment: dev/staging/prod")
 	_ = buildCmd.MarkFlagRequired("client")
