@@ -8,12 +8,10 @@ import (
 )
 
 type ClientConfig struct {
-	AppName     string            `json:"app_name"`
-	PackageName string            `json:"package_name"`
-	Version     string            `json:"version"`
-	BuildNumber int               `json:"build_number"`
-	DartDefines map[string]string `json:"dart_defines"`
-	Environment map[string]string `json:"environment"`
+	AppName        string            `json:"app_name"`
+	AppDescription string            `json:"app_description"`
+	PackageName    string            `json:"package_name"`
+	DartDefines    map[string]string `json:"dart_defines"`
 }
 
 func Load(clientPath string) (*ClientConfig, error) {

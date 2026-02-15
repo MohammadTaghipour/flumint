@@ -168,15 +168,21 @@ var buildCmd = &cobra.Command{
 				fmt.Println("no changes in web app name. current and new app names are same.")
 			}
 
+			if err := webUtil.SetManifestInfo(cfg.AppName, cfg.AppDescription); err != nil {
+				fmt.Println(utils.ErrorWriter(fmt.Sprintf("failed to set web info: %v", err)))
+			} else {
+				fmt.Printf("web app info updated in Manifest.json")
+			}
+
 		default:
 			fmt.Println(utils.ErrorWriter("Build failed."))
 			return fmt.Errorf("unsupported platform: %s", platform)
 		}
 
-		// if err := flutter.Build(root, platform, clientName, cfg); err != nil {
-		// 	fmt.Println(utils.ErrorWriter("Build failed."))
-		// 	return fmt.Errorf("failed to build app: %w", err)
-		// }
+		if err := flutter.Build(root, platform, clientName, cfg); err != nil {
+			fmt.Println(utils.ErrorWriter("Build failed."))
+			return fmt.Errorf("failed to build app: %w", err)
+		}
 
 		fmt.Println()
 		fmt.Println(utils.SuccessWriter("Build finished successfully"))
