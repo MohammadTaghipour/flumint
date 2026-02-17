@@ -6,3 +6,8 @@ type VersionInfo struct {
 	Dart     string `json:"dart"`
 	DevTools string `json:"dev_tools"`
 }
+
+type Pubspec struct {
+	Dependencies    map[string]interface{} `yaml:"dependencies"`
+	DevDependencies map[string]interface{} `yaml:"dev_dependencies"`
+}

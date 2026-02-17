@@ -7,6 +7,7 @@ require (
 	github.com/fatih/color v1.18.0
 	github.com/spf13/cobra v1.10.2
 	go.uber.org/zap v1.27.1
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (

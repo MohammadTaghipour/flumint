@@ -4,10 +4,41 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/MohammadTaghipour/flumint/internal/config"
+	"github.com/MohammadTaghipour/flumint/internal/utils"
+	"gopkg.in/yaml.v3"
 )
+
+func IsFlutterProject(root string) (bool, error) {
+	pubspecPath := filepath.Join(root, "pubspec.yaml")
+
+	if !utils.FileExists(pubspecPath) {
+		return false, fmt.Errorf("cannot access %s", pubspecPath)
+	}
+
+	data, err := os.ReadFile(pubspecPath)
+	if err != nil {
+		return false, fmt.Errorf("cannot read %s: %w", pubspecPath, err)
+	}
+
+	var p Pubspec
+	if err := yaml.Unmarshal(data, &p); err != nil {
+		return false, fmt.Errorf("invalid pubspec.yaml: %w", err)
+	}
+
+	if dep, ok := p.Dependencies["flutter"]; ok {
+		if m, ok := dep.(map[string]interface{}); ok {
+			if sdk, ok := m["sdk"]; ok && sdk == "flutter" {
+				return true, nil
+			}
+		}
+	}
+
+	return false, nil
+}
 
 func RunDoctor() (string, error) {
 	cmd := exec.Command("flutter", "doctor")
