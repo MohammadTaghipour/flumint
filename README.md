@@ -52,6 +52,20 @@ To make a Flutter project compatible with Flumint:
 
 4. Keep client-specific files inside each client folder (icons, assets, `google-services.json`, JKS, etc.) while preserving the folder structure.
 5. When running `flumint build` or `flumint checkout`, the selected client’s folder contents are replaced to the project.
+6. After building your Flutter project, you can get the current client using:
+
+```dart
+// This allows your app to detect which client it was built for.
+const String client = String.fromEnvironment('client', defaultValue: 'client_a');
+
+void main() {
+  print('Current client: $client');
+}
+```
+
+
+**Note:** The `clients` folder can be empty, but each client at least must have its `config.json` file.
+
 
 **Example folder structure:**
 
