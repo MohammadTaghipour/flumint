@@ -59,7 +59,7 @@ func GetVersion() (*VersionInfo, error) {
 	return parseVersion(string(out))
 }
 
-func Build(root, platform, clientName string, cfg *config.ClientConfig) error {
+func Build(root, target, clientName string, cfg *config.ClientConfig) error {
 	var cmd *exec.Cmd
 
 	dartDefines := []string{}
@@ -70,15 +70,18 @@ func Build(root, platform, clientName string, cfg *config.ClientConfig) error {
 		dartDefines = append(dartDefines, fmt.Sprintf("--dart-define=CLIENT=%s", clientName))
 	}
 
-	switch platform {
-	case "android":
+	switch target {
+	case "apk":
 		args := append([]string{"build", "apk", "--release"}, dartDefines...)
+		cmd = exec.Command("flutter", args...)
+	case "appbundle":
+		args := append([]string{"build", "appbundle", "--release"}, dartDefines...)
 		cmd = exec.Command("flutter", args...)
 	case "web":
 		args := append([]string{"build", "web", "--release"}, dartDefines...)
 		cmd = exec.Command("flutter", args...)
 	default:
-		return fmt.Errorf("unsupported platform: %s", platform)
+		return fmt.Errorf("unsupported target platform: %s", target)
 	}
 
 	cmd.Dir = root
