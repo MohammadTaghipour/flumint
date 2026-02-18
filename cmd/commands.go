@@ -37,7 +37,7 @@ var doctorCmd = &cobra.Command{
 var buildCmd = &cobra.Command{
 	Use:   "build",
 	Short: "Build Flutter project for a client",
-	Long:  "Builds a Flutter project for the specified client, platform, and environment, injecting assets and updating configuration automatically.",
+	Long:  "Builds a Flutter project for the specified client, target platform, and environment, injecting assets and updating configuration automatically.",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return service.RunBuild(cmd)
 	},
@@ -57,8 +57,8 @@ func init() {
 	// Build command flags
 	buildCmd.Flags().String("client", "", "Client name (required)")
 	buildCmd.Flags().String("path", ".", "Path to Flutter project (default: current directory)")
-	buildCmd.Flags().String("platform", "android", "Target platform: android/web")
-	buildCmd.Flags().String("env", "dev", "Environment: dev/staging/prod")
+	buildCmd.Flags().String("target", "", "Target platform: apk/appbundle/web (required)")
+	buildCmd.Flags().String("env", "prod", "Environment: dev/staging/prod")
 	_ = buildCmd.MarkFlagRequired("client")
 
 	// Checkout command flags

@@ -24,7 +24,7 @@ func RunBuild(cmd *cobra.Command) error {
 	s.Stop()
 
 	clientName, _ := cmd.Flags().GetString("client")
-	platform, _ := cmd.Flags().GetString("platform")
+	target, _ := cmd.Flags().GetString("target")
 	env, _ := cmd.Flags().GetString("env")
 	root, _ := cmd.Flags().GetString("path")
 
@@ -33,7 +33,7 @@ func RunBuild(cmd *cobra.Command) error {
 		return checkoutFail("not a flutter project", err)
 	}
 
-	fmt.Printf("Building client %s for %s in %s environment...\n", clientName, platform, env)
+	fmt.Printf("Building %s for client %s in %s environment...\n", target, clientName, env)
 
 	clientPath, err := client.Resolve(root, clientName)
 	if err != nil || clientPath == "" {
@@ -60,8 +60,12 @@ func RunBuild(cmd *cobra.Command) error {
 	s.Stop()
 	fmt.Println("Assets injected successfully")
 
-	switch platform {
-	case "android":
+	switch target {
+	case "apk":
+		if err := syncAndroid(root, cfg); err != nil {
+			return err
+		}
+	case "appbundle":
 		if err := syncAndroid(root, cfg); err != nil {
 			return err
 		}
@@ -70,10 +74,10 @@ func RunBuild(cmd *cobra.Command) error {
 			return err
 		}
 	default:
-		return buildFail(fmt.Sprintf("unsupported platform: %s", platform), nil)
+		return buildFail(fmt.Sprintf("unsupported target platform: %s", target), nil)
 	}
 
-	if err := flutter.Build(root, platform, clientName, cfg); err != nil {
+	if err := flutter.Build(root, target, clientName, cfg); err != nil {
 		return buildFail("failed to build app", err)
 	}
 
