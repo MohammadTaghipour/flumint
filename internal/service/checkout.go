@@ -7,6 +7,7 @@ import (
 	"github.com/MohammadTaghipour/flumint/internal/assets"
 	"github.com/MohammadTaghipour/flumint/internal/client"
 	"github.com/MohammadTaghipour/flumint/internal/config"
+	"github.com/MohammadTaghipour/flumint/internal/flutter"
 	"github.com/MohammadTaghipour/flumint/internal/platform/android"
 	"github.com/MohammadTaghipour/flumint/internal/platform/web"
 	"github.com/MohammadTaghipour/flumint/internal/utils"
@@ -23,6 +24,11 @@ func RunCheckout(cmd *cobra.Command) error {
 
 	clientName, _ := cmd.Flags().GetString("client")
 	root, _ := cmd.Flags().GetString("path")
+
+	isFlutter, err := flutter.IsFlutterProject(root)
+	if err != nil || !isFlutter {
+		return checkoutFail("not a flutter project", err)
+	}
 
 	clientPath, err := client.Resolve(root, clientName)
 	if err != nil || clientPath == "" {

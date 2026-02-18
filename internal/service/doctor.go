@@ -20,7 +20,7 @@ func RunDoctor(cmd *cobra.Command) error {
 	flutterV, err := flutter.GetVersion()
 	if err != nil {
 		s.Stop()
-		fmt.Println("Flumint doctor failed ✖")
+		fmt.Println("Flumint doctor failed")
 		return fmt.Errorf("failed to get flutter version: %w", err)
 	}
 

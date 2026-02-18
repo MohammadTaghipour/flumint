@@ -28,6 +28,11 @@ func RunBuild(cmd *cobra.Command) error {
 	env, _ := cmd.Flags().GetString("env")
 	root, _ := cmd.Flags().GetString("path")
 
+	isFlutter, err := flutter.IsFlutterProject(root)
+	if err != nil || !isFlutter {
+		return checkoutFail("not a flutter project", err)
+	}
+
 	fmt.Printf("Building client %s for %s in %s environment...\n", clientName, platform, env)
 
 	clientPath, err := client.Resolve(root, clientName)
