@@ -5,6 +5,21 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var networkCmd = &cobra.Command{
+	Use:   "network",
+	Short: "Check network connectivity to all required repositories",
+	Long: `Checks access to all major repositories needed for Flutter development:
+- pub.dev
+- Flutter Storage
+- Google Maven
+- Maven Central
+- CocoaPods CDN
+Displays connection status for each repository.`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return service.RunNetworkCheck()
+	},
+}
+
 var doctorCmd = &cobra.Command{
 	Use:   "doctor",
 	Short: "Check Flumint health and status of components",
