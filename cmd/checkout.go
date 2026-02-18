@@ -34,14 +34,14 @@ var checkoutCmd = &cobra.Command{
 
 		clientPath, err := client.Resolve(root, clientName)
 		if err != nil || clientPath == "" {
-			fmt.Println(utils.ErrorWriter("Build failed."))
+			fmt.Println(utils.ErrorWriter("Checkout failed."))
 			return fmt.Errorf("failed to resolve client: %w", err)
 		}
 		fmt.Printf("client path resolved: %s\n", clientPath)
 
 		cfg, err := config.Load(clientPath)
 		if err != nil {
-			fmt.Println(utils.ErrorWriter("Build failed."))
+			fmt.Println(utils.ErrorWriter("Checkout failed."))
 			return fmt.Errorf("failed to load config: %w", err)
 		}
 		fmt.Println("config.json detected")
@@ -53,7 +53,7 @@ var checkoutCmd = &cobra.Command{
 		s.Start()
 		time.Sleep(time.Second * 2)
 		if err := assets.Inject(root, clientPath); err != nil {
-			fmt.Println(utils.ErrorWriter("Build failed."))
+			fmt.Println(utils.ErrorWriter("Checkout failed."))
 			return fmt.Errorf("failed to inject assets: %w", err)
 		}
 		s.Stop()
@@ -63,14 +63,14 @@ var checkoutCmd = &cobra.Command{
 
 		currAppName, err := androidUtil.GetAppName()
 		if err != nil {
-			fmt.Println(utils.ErrorWriter("Build failed."))
+			fmt.Println(utils.ErrorWriter("Checkout failed."))
 			return fmt.Errorf("failed to fetch android app name: %w", err)
 		}
 		fmt.Printf("current app name is: %s\n", utils.InfoWriter(currAppName))
 
 		if currAppName != cfg.AppName {
 			if err := androidUtil.SetAppName(cfg.AppName); err != nil {
-				fmt.Println(utils.ErrorWriter("Build failed."))
+				fmt.Println(utils.ErrorWriter("Checkout failed."))
 				return fmt.Errorf("failed to set android app name: %w", err)
 			}
 			fmt.Printf("app name changed from %s to %s\n", utils.InfoWriter(currAppName), utils.InfoWriter(cfg.AppName))
@@ -80,26 +80,26 @@ var checkoutCmd = &cobra.Command{
 
 		currPackageName, err := androidUtil.GetPackageName()
 		if err != nil {
-			fmt.Println(utils.ErrorWriter("Build failed."))
+			fmt.Println(utils.ErrorWriter("Checkout failed."))
 			return fmt.Errorf("failed to fetch android package name: %w", err)
 		}
 		fmt.Printf("current package name is: %s\n", utils.InfoWriter(currPackageName))
 
 		if currPackageName != cfg.PackageName {
 			if err := androidUtil.SetPackageName(cfg.PackageName); err != nil {
-				fmt.Println(utils.ErrorWriter("Build failed."))
+				fmt.Println(utils.ErrorWriter("Checkout failed."))
 				return fmt.Errorf("failed to set android package name: %w", err)
 			}
 			fmt.Printf("package name changed from %s to %s\n", utils.InfoWriter(currPackageName), utils.InfoWriter(cfg.PackageName))
 
 			if err := androidUtil.SetPackageNameInActivities(cfg.PackageName); err != nil {
-				fmt.Println(utils.ErrorWriter("Build failed."))
+				fmt.Println(utils.ErrorWriter("Checkout failed."))
 				return fmt.Errorf("failed to update package name in java/kotlin files: %w", err)
 			}
 			fmt.Printf("package name in java|kotlin files changed to %s\n", utils.InfoWriter(cfg.PackageName))
 
 			if err := androidUtil.SetPackageNameInManifest(cfg.PackageName); err != nil {
-				fmt.Println(utils.ErrorWriter("Build failed."))
+				fmt.Println(utils.ErrorWriter("Checkout failed."))
 				return fmt.Errorf("failed to update package name in manifest files: %w", err)
 			}
 			fmt.Printf("package name in AndroidManifest.xml file changed to %s\n", utils.InfoWriter(cfg.PackageName))
@@ -111,14 +111,14 @@ var checkoutCmd = &cobra.Command{
 
 		currAppName, err = webUtil.GetAppName()
 		if err != nil {
-			fmt.Println(utils.ErrorWriter("Build failed."))
+			fmt.Println(utils.ErrorWriter("Checkout failed."))
 			return fmt.Errorf("failed to fetch web app name: %w", err)
 		}
 		fmt.Printf("current web app name is: %s\n", utils.InfoWriter(currAppName))
 
 		if currAppName != cfg.AppName {
 			if err := webUtil.SetAppName(cfg.AppName); err != nil {
-				fmt.Println(utils.ErrorWriter("Build failed."))
+				fmt.Println(utils.ErrorWriter("Checkout failed."))
 				return fmt.Errorf("failed to set web app name: %w", err)
 			}
 			fmt.Printf("web app name changed from %s to %s\n", utils.InfoWriter(currAppName), utils.InfoWriter(cfg.AppName))
