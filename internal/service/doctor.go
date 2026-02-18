@@ -35,5 +35,5 @@ func RunDoctor(cmd *cobra.Command) error {
 
 	fmt.Println()
 
-	return nil
+	return RunNetworkCheck()
 }
